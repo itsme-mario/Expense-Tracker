@@ -24,17 +24,16 @@ def add_expense(amount):
     prev_ID = 0
     if os.path.exists(file_name):
         with open(file_name, 'r', newline='') as csvfile:
-            expenses_reader = csv.DictReader(csvfile, delimiter=' ', quotechar='|')
             expenses_reader = csv.DictReader(csvfile)
-            if expenses_reader:
-                data = list(expenses_reader)
-                if data:
-                    prev_total = float(data[-1]['Total'])
-                    prev_ID = int(data[-1]['ID'])
+            data = list(expenses_reader)
+            if data:
+                prev_total = float(data[-1]['Total'])
+                prev_ID = int(data[-1]['ID'])
+
 
     with open('expenses.csv', 'a', newline='') as csvfile:
         expenses_writer = csv.DictWriter(csvfile, fieldnames=["ID", "Date", "Description", "Amount", "Total"])
-        if sum(1 for line in open(file_name)) == 0:  # if file is empty, write header
+        if os.path.getsize(file_name) == 0:
             expenses_writer.writeheader()
         current_datetime = datetime.now().strftime("%Y-%m-%d")
         expenses_writer.writerow({"ID": prev_ID + 1, "Date": current_datetime, "Description": args.description, "Amount": amount, "Total": prev_total + amount})
@@ -107,8 +106,6 @@ def delete_expense(target_id):
         for row in data:
             if int(row['ID']) != target_id:  # keep rows that don't match target
                 row['Total'] = str(float(row['Total']) - deleted_amount)
-                if int(row['ID']) > target_id:
-                    row['ID'] = str(int(row['ID']) - 1)
                 writer.writerow(row)
 
     # Replace the original file with the filtered version
